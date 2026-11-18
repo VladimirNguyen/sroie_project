@@ -33,7 +33,7 @@ def label_lines(lines,entities):
                 if value>=0.38 and len(canonical(lines[i]))>=5 and labels[i]=="OTHER": labels[i]="ADDRESS"
         elif pairs:
             value,i=max(pairs)
-            if value >= (0.52 if field in ("date","total") else 0.45) and labels[i]=="OTHER":
+            if value >= (0.40 if field == "total" else (0.52 if field == "date" else 0.45)) and labels[i]=="OTHER":
                 labels[i]=field.upper()
     return labels
 
