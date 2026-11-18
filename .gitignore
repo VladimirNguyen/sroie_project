@@ -6,3 +6,6 @@ data/raw/*
 outputs/*
 !outputs/.gitkeep
 .pytest_cache/
+
+models/*.joblib
+models/*.pkl

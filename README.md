@@ -39,3 +39,35 @@ https://github.com/metatatt/sorie
 
 ## Giới hạn
 Không phải phần mềm kế toán. Luật còn phụ thuộc tiếng Anh và bố cục Malaysia. improved không mặc nhiên tốt hơn basic. Địa chỉ có thể dừng sớm ở mã bưu chính; tổng tiền có thể nhầm CASH ở dòng sau; chưa hỗ trợ tốt tiền nguyên VND. Xem phân tích lỗi thật trong báo cáo.
+
+
+## Machine Learning: TF-IDF + Logistic Regression
+Pipeline: OpenCV -> Tesseract -> word/char TF-IDF -> LogisticRegression -> JSON 4 fields. Two rule-based extractors remain available.
+
+### Windows PowerShell
+Commands (from the repo root, where app.py lives):
+
+    git pull origin main
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install -r requirements.txt
+    python -m pytest tests -q
+
+Place labeled SROIE data in data/raw/SROIE2019, with:
+- train/img, train/box, train/entities
+- test/img, test/box, test/entities (if available)
+
+If stored on drive D, set SROIE_DIR in PowerShell, for example:
+
+    $env:SROIE_DIR = "D:\data\SROIE2019"
+
+Train, report metrics, and run the web app:
+
+    python scripts/train_model.py
+    python -m streamlit run app.py
+
+Choose the **ml** option in the "Phương pháp trích trường" sidebar selector. Output model: models/receipt_model.joblib. Scores: outputs/ml/metrics.json. Both output directories are ignored by Git.
+
+### Evaluation and limitations
+Training only on the train split. Validation and test held out from fitting. Metrics include weak line-label accuracy and macro F1, per-field exact match and all-four-correct. No verified score can be claimed without running training on your local SROIE data.
+
+The line labels are *automatically aligned* from SROIE entities to box text; they are not manual line-level annotations. Training and evaluation use ground-truth box transcription, NOT OCR predictions, so the reported scores are not end-to-end OCR accuracy. The loader may create an internal holdout if a labeled test folder is absent. The model must be reevaluated on real OCR output before making accuracy claims about uploaded images. Only load your own joblib model files.
