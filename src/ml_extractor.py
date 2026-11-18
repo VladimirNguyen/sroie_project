@@ -74,6 +74,24 @@ def predict_fields(lines,model):
     out["address"]=" ".join(addresses) if addresses else None
     return out
 
+
+def predict_fields_hybrid(lines, model):
+    """ML first; use improved extraction only if ML misses the total.
+
+    Returns (fields, sources). This is a hybrid inference mode, distinct
+    from pure-ML evaluation in scripts/train_model.py.
+    """
+    from src.extractors import improved_extract
+    result = predict_fields(lines, model)
+    sources = {field: "ml" if value else "missing" for field, value in result.items()}
+    if not result["total"]:
+        fallback = improved_extract(lines).get("total")
+        if fallback:
+            result["total"] = fallback
+            sources["total"] = "rule_fallback"
+    return result, sources
+
+
 def load_model(path=MODEL_PATH):
     import joblib
     if not Path(path).is_file():
