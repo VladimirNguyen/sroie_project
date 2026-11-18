@@ -10,7 +10,7 @@ import numpy as np
 import streamlit as st
 
 from src.normalize import normalize_date, normalize_total
-from src.ml_extractor import load_model, predict_fields
+from src.ml_extractor import load_model, predict_fields_hybrid
 from src.ocr_engine import OCRNotAvailable, get_engine
 from src.pipeline import extract
 from src.preprocess import VARIANTS, preprocess
@@ -69,7 +69,7 @@ if not lines:
 if extractor == "ml":
     try:
         model = load_model_cached()
-        result = predict_fields([line.text for line in lines], model)
+        result, ml_sources = predict_fields_hybrid([line.text for line in lines], model)
     except (FileNotFoundError, ImportError) as e:
         st.error(str(e))
         st.stop()
@@ -88,6 +88,8 @@ with c2:
 with c3:
     st.subheader("JSON 4 trường")
     st.json(result)
+    if extractor == "ml" and ml_sources["total"] == "rule_fallback":
+        st.info("ML chưa xác định được total; đã sử dụng bộ luật improved để bổ sung. Đây là kết quả kết hợp ML + luật.")
     if missing:
         st.warning("Không tìm thấy: " + ", ".join(missing))
     with st.expander("Giá trị đã chuẩn hóa (bản gốc vẫn giữ ở trên)"):
